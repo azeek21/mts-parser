@@ -8,7 +8,9 @@ const CONFIG = {
     FAILED: "failed",
     RUNNING: "running",
   },
-  BASE_URL: "http://localhost:3000/",
+  BASE_URL: process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}/`
+    : "http://localhost:3000/",
 };
 
 export default CONFIG;
