@@ -17,6 +17,7 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
   tariffsString = tariffsString.substring(0, tariffsString.length - 1);
   let tariffsArray = JSON.parse(tariffsString);
   let actualTariffs: any[] = tariffsArray?.actualTariffs;
+  console.time("write");
   const update = await db.update.create({});
   try {
     for (const element of actualTariffs) {
@@ -43,6 +44,7 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
       const discountValue = element.discountFee?.numValue;
       const discountDescription =
         element.subscriptionFeeAnnotationSettings?.text;
+      console.time(`crteate ${element.id}`);
       await db.tariff.create({
         data: {
           title: element.title,
@@ -56,7 +58,7 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
           discountDescription: withDiscount ? discountDescription : "",
           price: {
             create: {
-              title: `${price?.numValue} ${price?.displayUnit}`,
+              title: price?.value || "",
               value: price?.numValue || 0,
               displayUnit: price?.displayUnit || "",
               quotaPeriod: price?.quotaPeriod || "",
@@ -78,6 +80,7 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
           },
         },
       });
+      console.timeEnd(`crteate ${element.id}`);
     }
     await db.update.update({
       where: { id: update.id },
@@ -90,6 +93,7 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
       data: { status: CONFIG.UPDATE_STATUS.FAILED },
     });
   }
+  console.timeEnd("write");
   return true;
 }
 
