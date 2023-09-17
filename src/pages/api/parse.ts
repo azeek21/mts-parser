@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, tariffCharacter } from "@prisma/client";
 import { parseAndUpdate, shouldUpdate } from "@/parse";
+import CONFIG from "@/configs/config";
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,11 +13,9 @@ export default async function handler(
   const db = new PrismaClient();
   await db.$connect();
   if (!(await shouldUpdate(db))) {
-    return res.status(202).send({ message: "already good" });
+    return res.status(202).send({ message: "Database is up to date." });
   }
-  const raw = await fetch(
-    "https://moskva.mts.ru/personal/mobilnaya-svyaz/tarifi/vse-tarifi/mobile-tv-inet"
-  );
+  const raw = await fetch(CONFIG.DOCUMENT_URL);
   const body = await raw.text();
   await parseAndUpdate(db, body);
   console.timeEnd("all");

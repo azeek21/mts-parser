@@ -1,6 +1,8 @@
 import { PrismaClient, tariffCharacter } from "@prisma/client";
 import * as cheerio from "cheerio";
+import CONFIG from "./configs/config";
 
+// TODO: refactor
 async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
   const document = cheerio.load(htmlDocString, {
     decodeEntities: false,
@@ -79,13 +81,13 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
     }
     await db.update.update({
       where: { id: update.id },
-      data: { status: "done" },
+      data: { status: CONFIG.UPDATE_STATUS.DONE },
     });
   } catch (error) {
     console.error("error: ", error);
     await db.update.update({
       where: { id: update.id },
-      data: { status: "failed" },
+      data: { status: CONFIG.UPDATE_STATUS.FAILED },
     });
   }
   return true;
@@ -93,19 +95,18 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
 
 async function shouldUpdate(db: PrismaClient) {
   const update = await db.update.findFirst({
-    where: {
-      status: "done",
-    },
     orderBy: {
       updatedAt: "desc",
     },
   });
 
   if (!update) return true;
+  if (update.status === CONFIG.UPDATE_STATUS.FAILED) return true;
+  if (update.status === CONFIG.UPDATE_STATUS.RUNNING) return false;
+
   const now = new Date().getTime();
-  const updatedNMinutesAgo = now - new Date(update.updatedAt).getTime();
-  const interval = 1000 * 60 * 30;
-  return updatedNMinutesAgo > interval;
+  const updatedNMsAgo = now - new Date(update.updatedAt).getTime();
+  return updatedNMsAgo > CONFIG.UPDATE_INTERVAL;
 }
 
 export { parseAndUpdate, shouldUpdate };

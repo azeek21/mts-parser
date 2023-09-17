@@ -1,16 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
+import CONFIG from "@/configs/config";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== "GET") return res.status(405).end();
-  console.time("tarriffs");
+  console.time("tariffs");
   const db = new PrismaClient();
   const update = await db.update.findFirst({
     where: {
-      status: "done",
+      status: CONFIG.UPDATE_STATUS.DONE,
     },
     orderBy: {
       updatedAt: "desc",
@@ -21,11 +22,9 @@ export default async function handler(
   });
 
   if (!update) {
-    return res
-      .status(404)
-      .send({
-        message: "No tarffs availble. Try parsing some first at /parse",
-      });
+    return res.status(404).send({
+      message: "No tarffs availble. Try parsing some first at /parse",
+    });
   }
 
   const tariffs = await db.tariff.findMany({
