@@ -177,8 +177,8 @@ export default function Home({ tariffs }: IHome) {
       <main className="mt-4 px-8 max-w-screen-2xl m-auto">
         {tariffs && tariffs.length == 0 && (
           <h1>
-            No data yet. Tring parsing the data first by clicking the button at
-            top
+            No data yet. Tring parsing the data first by clicking the PARSAE
+            button.
           </h1>
         )}
         {tariffs && tariffs.length > 0 && (
