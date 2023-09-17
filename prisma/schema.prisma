@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model tariff {
+  id    Int   @id @default(autoincrement())
+  title String  @default("")
+  desctiption String @default("")
+  tariffType  String
+  alias String
+  label String @default("")
+  withDiscount  Boolean
+  discountDescription String?
+  priceWithDiscount Int?
+  price     price?
+  characters tariffCharacter[]
+  benifits benifits?
+  update  update @relation(fields: [updateId], references: [id])
+  updateId Int
+}
+
+model price {
+  id    Int @id @default(autoincrement())
+  value Int
+  title String
+  displayUnit String
+  quotaUnit   String
+  quotaPeriod String
+  tariff  tariff @relation(fields: [tariffId], references: [id])
+  tariffId Int @unique
+  update  update @relation(fields: [updateId], references: [id])
+  updateId Int
+}
+
+model benifits {
+  id Int @id @default(autoincrement())
+  description String
+  icons  String[]
+  tariff tariff @relation(fields: [tariffId], references: [id])
+  tariffId Int @unique
+  update  update @relation(fields: [updateId], references: [id])
+  updateId Int
+}
+
+model tariffCharacter {
+  id Int @id @default(autoincrement())
+  title String?
+  value String
+  numValue Int
+  displayUnit String?
+  quotaUnit String
+  tariff tariff @relation(fields: [tariffId], references: [id])
+  tariffId Int
+  update  update @relation(fields: [updateId], references: [id])
+  updateId Int
+}
+
+model update {
+  id  Int @id @default(autoincrement())
+  updatedAt DateTime @default(now())
+  status  String  @default("running")
+  prices price[]
+  tariffs tariff[]
+  characters tariffCharacter[]
+  benifits benifits[]
+}
+
