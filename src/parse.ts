@@ -1,10 +1,7 @@
 import { PrismaClient, tariffCharacter } from "@prisma/client";
 import * as cheerio from "cheerio";
 
-export default async function parseAndUpdate(
-  db: PrismaClient,
-  htmlDocString: string
-) {
+async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
   const document = cheerio.load(htmlDocString, {
     decodeEntities: false,
     xmlMode: false,
@@ -93,3 +90,22 @@ export default async function parseAndUpdate(
   }
   return true;
 }
+
+async function shouldUpdate(db: PrismaClient) {
+  const update = await db.update.findFirst({
+    where: {
+      status: "done",
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
+  if (!update) return true;
+  const now = new Date().getTime();
+  const updatedNMinutesAgo = now - new Date(update.updatedAt).getTime();
+  const interval = 1000 * 60 * 30;
+  return updatedNMinutesAgo > interval;
+}
+
+export { parseAndUpdate, shouldUpdate };
