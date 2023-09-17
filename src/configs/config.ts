@@ -8,6 +8,7 @@ const CONFIG = {
     FAILED: "failed",
     RUNNING: "running",
   },
+  BASE_URL: "http://localhost:3000/",
 };
 
 export default CONFIG;

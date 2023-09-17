@@ -1,6 +1,6 @@
 import { PrismaClient, tariffCharacter } from "@prisma/client";
 import * as cheerio from "cheerio";
-import CONFIG from "./configs/config";
+import CONFIG from "../configs/config";
 
 // TODO: refactor
 async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
@@ -17,7 +17,6 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
   tariffsString = tariffsString.substring(0, tariffsString.length - 1);
   let tariffsArray = JSON.parse(tariffsString);
   let actualTariffs: any[] = tariffsArray?.actualTariffs;
-  console.time("write");
   const update = await db.update.create({});
   try {
     for (const element of actualTariffs) {
@@ -44,7 +43,6 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
       const discountValue = element.discountFee?.numValue;
       const discountDescription =
         element.subscriptionFeeAnnotationSettings?.text;
-      console.time(`crteate ${element.id}`);
       await db.tariff.create({
         data: {
           title: element.title,
@@ -80,20 +78,17 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
           },
         },
       });
-      console.timeEnd(`crteate ${element.id}`);
     }
     await db.update.update({
       where: { id: update.id },
       data: { status: CONFIG.UPDATE_STATUS.DONE },
     });
   } catch (error) {
-    console.error("error: ", error);
     await db.update.update({
       where: { id: update.id },
       data: { status: CONFIG.UPDATE_STATUS.FAILED },
     });
   }
-  console.timeEnd("write");
   return true;
 }
 

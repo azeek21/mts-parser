@@ -7,7 +7,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method !== "GET") return res.status(405).end();
-  console.time("tariffs");
   const db = new PrismaClient();
   const update = await db.update.findFirst({
     where: {
@@ -22,9 +21,7 @@ export default async function handler(
   });
 
   if (!update) {
-    return res.status(404).send({
-      message: "No tarffs availble. Try parsing some first at /parse",
-    });
+    return res.send([]);
   }
 
   const tariffs = await db.tariff.findMany({
@@ -37,6 +34,5 @@ export default async function handler(
       price: true,
     },
   });
-  console.timeEnd("tariffs");
   return res.send(tariffs);
 }
