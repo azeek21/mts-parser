@@ -8,9 +8,7 @@ const CONFIG = {
     FAILED: "failed",
     RUNNING: "running",
   },
-  BASE_URL: process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}/`
-    : "http://localhost:3000/",
+  BASE_URL: "https://mts-parser.vercel.app/",
 };
 
 export default CONFIG;
