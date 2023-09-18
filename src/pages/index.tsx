@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
 import { InferGetServerSidePropsType } from "next";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import CONFIG from "@/configs/config";
 import { Button, Chip, LinearProgress, Typography } from "@mui/material";
 import { useState } from "react";
@@ -163,6 +163,15 @@ export default function Home({ tariffs }: IHome) {
           MTS TARIFFS
         </Typography>
 
+        <div className="ml-auto mr-8">
+          <a
+            className="text-green-600 p-2 border-green-700 border rounded-xl text-lg bg-green-950 flex items-center justify-center"
+            href="mailto:pymanuz@gmail.com"
+          >
+            Mail Me :-)
+          </a>
+        </div>
+
         <Button
           variant="outlined"
           size="large"
@@ -174,32 +183,24 @@ export default function Home({ tariffs }: IHome) {
       </header>
       {isLoading && <LinearProgress />}
 
-      <main className="mt-4 px-8 max-w-screen-2xl m-auto">
-        {tariffs && tariffs.length == 0 && (
+      <main className="mt-4 px-4 max-w-screen-2xl m-auto h-full pb-24">
+        {data && data.length == 0 && (
           <h1>
             No data yet. Tring parsing the data first by clicking the PARSAE
             button.
           </h1>
         )}
-        {tariffs && tariffs.length > 0 && (
+        {data && data.length > 0 && (
           <DataGrid
             columns={baseColumns}
-            rows={tariffs}
+            rows={data}
+            slots={{ toolbar: GridToolbar }}
             initialState={{
-              pagination: { paginationModel: { pageSize: 11 } },
+              pagination: { paginationModel: { pageSize: 10 } },
             }}
             pageSizeOptions={[5, 10, 15, 20, 25]}
           />
         )}
-
-        <div className="fixed right-8 bottom-16">
-          <a
-            className="text-green-600 p-2 border-green-700 border rounded-xl text-xl"
-            href="mailto:pymanuz@gmail.com"
-          >
-            Mail Me :-)
-          </a>
-        </div>
       </main>
     </>
   );
