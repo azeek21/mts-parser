@@ -19,6 +19,8 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
   let actualTariffs: any[] = tariffsArray?.actualTariffs;
   const update = await db.update.create({});
   try {
+    let allInOne = [];
+
     for (const element of actualTariffs) {
       const price = element.subscriptionFee;
       const label = element.productLabels ? element.productLabels[0]?.text : "";
@@ -43,46 +45,52 @@ async function parseAndUpdate(db: PrismaClient, htmlDocString: string) {
       const discountValue = element.discountFee?.numValue;
       const discountDescription =
         element.subscriptionFeeAnnotationSettings?.text;
-      await db.tariff.create({
-        data: {
-          title: element.title,
-          alias: element.alias,
-          tariffType: element.tariffType,
-          desctiption: element.description,
-          label: label,
-          updateId: update.id,
-          withDiscount: withDiscount,
-          priceWithDiscount: withDiscount ? discountValue : 0,
-          discountDescription: withDiscount ? discountDescription : "",
-          price: {
-            create: {
-              title: price?.value || "",
-              value: price?.numValue || 0,
-              displayUnit: price?.displayUnit || "",
-              quotaPeriod: price?.quotaPeriod || "",
-              quotaUnit: price?.quotaUnit || "",
-              updateId: update.id,
+      allInOne.push(
+        db.tariff.create({
+          data: {
+            title: element.title,
+            alias: element.alias,
+            tariffType: element.tariffType,
+            desctiption: element.description,
+            label: label,
+            updateId: update.id,
+            withDiscount: withDiscount,
+            priceWithDiscount: withDiscount ? discountValue : 0,
+            discountDescription: withDiscount ? discountDescription : "",
+            price: {
+              create: {
+                title: price?.value || "",
+                value: price?.numValue || 0,
+                displayUnit: price?.displayUnit || "",
+                quotaPeriod: price?.quotaPeriod || "",
+                quotaUnit: price?.quotaUnit || "",
+                updateId: update.id,
+              },
+            },
+            characters: {
+              createMany: {
+                data: characters,
+              },
+            },
+            benifits: {
+              create: {
+                description: benifitDescription,
+                icons: benifitIcons,
+                updateId: update.id,
+              },
             },
           },
-          characters: {
-            createMany: {
-              data: characters,
-            },
-          },
-          benifits: {
-            create: {
-              description: benifitDescription,
-              icons: benifitIcons,
-              updateId: update.id,
-            },
-          },
-        },
-      });
+        })
+      );
     }
-    await db.update.update({
-      where: { id: update.id },
-      data: { status: CONFIG.UPDATE_STATUS.DONE },
-    });
+
+    allInOne.push(
+      db.update.update({
+        where: { id: update.id },
+        data: { status: CONFIG.UPDATE_STATUS.DONE },
+      })
+    );
+    await Promise.all(allInOne);
   } catch (error) {
     await db.update.update({
       where: { id: update.id },
